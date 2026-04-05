@@ -7,7 +7,8 @@ import {
 } from "./product_model.js";
 
 export const readProducts = async (req, res) => {
-  const products = await getProducts();
+  const { name, categoryId, minPrice, maxPrice } = req.body;
+  const products = await getProducts({ name, categoryId, minPrice, maxPrice });
   if (products.length === 0) {
     return res.status(404).json({ message: "No products found" });
   }
@@ -37,7 +38,7 @@ export const updateProduct = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
   const product = await removeProduct(req.params.id);
-    if (!product) {
+  if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
   return res.status(200).json({ message: "removeProduct", product: product });
