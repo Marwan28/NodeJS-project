@@ -1,2 +1,8 @@
 node_modules
 serviceAccountKey.json
+.kiro/rules.md
+.md
+.env
+.kiro/steering/rules.md
+.kiro/hooks/auto-update-rules.kiro.hook
+Complete_API.postman_collection.json
