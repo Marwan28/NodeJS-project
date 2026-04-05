@@ -1,12 +1,31 @@
-import { log } from "firebase/firestore/pipelines";
 import db from "../../config/firebase-config.js";
 
-const collection = db.collection("products");
+let collection = db.collection("products");
 
-export const getProducts = async () => {
-  const snapshot = await collection.get();
-
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+export const getProducts = async ({
+  name,
+  categoryId,
+  minPrice,
+  maxPrice,
+} = {}) => {
+  let query = collection;
+  if (categoryId) {
+    query = query.where("categoryId", "==", categoryId);
+  }
+  if (minPrice) {
+    query = query.where("price", ">=", Number(minPrice));
+  }
+  if (maxPrice) {
+    query = query.where("price", "<=", Number(maxPrice));
+  }
+  const snapshot = await query.get();
+  let products = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  if (name) {
+    products = products.filter((p) =>
+      p.name.toLowerCase().includes(name.toLowerCase()),
+    );
+  }
+  return products;
 };
 
 export const getProductById = async (id) => {
