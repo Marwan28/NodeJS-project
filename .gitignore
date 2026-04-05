@@ -1,2 +1,7 @@
 node_modules
 serviceAccountKey.json
+.kiro/rules.md
+.md
+.env
+.kiro/steering/rules.md
+.kiro/hooks/auto-update-rules.kiro.hook
