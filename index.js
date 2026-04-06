@@ -9,6 +9,7 @@ import wishlistRouter from "./features/wishlist/wishlist_router.js";
 import reviewRouter from "./features/reviews/review_router.js";
 import productRouter from "./features/products/product_router.js";
 import categoryRouter from "./features/categories/category_router.js";
+import cartRouter from "./features/cart/cart_router.js";
 
 let app = express();
 
@@ -20,6 +21,7 @@ app.use(wishlistRouter);
 app.use(reviewRouter);
 app.use(productRouter);
 app.use(categoryRouter);
+app.use(cartRouter);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
