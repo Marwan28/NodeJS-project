@@ -40,14 +40,9 @@ userRouter.get("/confirm-email/:token", confirmEmail);
 
 // Protected routes (require authentication)
 userRouter.get("/users", verifyToken, verifyAdmin, readUsers);
-userRouter.get("/users/:id", verifyToken, readUser);
-userRouter.put("/users/:id", verifyToken, editUser);
-userRouter.put(
-  "/users/:id",
-  verifyToken,
-  verifyAdmin,
-  updateUserProfileStatus,
-);
-userRouter.delete("/users/:id", verifyToken, removeUser);
+userRouter.get("/users/:id", verifyToken, verifyAdmin, readUser);
+userRouter.put("/users/:id", verifyToken, verifyAdmin, editUser);
+userRouter.put("/users/:id", verifyToken, verifyAdmin, updateUserProfileStatus);
+userRouter.delete("/users/:id", verifyToken, verifyAdmin, removeUser);
 
 export default userRouter;
