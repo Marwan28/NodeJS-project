@@ -986,14 +986,15 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "token", "value": "{{token}}" }
+              { "key": "token", "value": "{{token}}" },
+              { "key": "x-guest-id", "value": "{{guestId}}" }
             ],
             "url": {
               "raw": "{{baseUrl}}/payment/create",
               "host": ["{{baseUrl}}"],
               "path": ["payment", "create"]
             },
-            "description": "Uses the authenticated user's cart and returns a PayPal approval URL."
+            "description": "Uses the authenticated user's cart when available, or the guest cart from x-guest-id, and returns a PayPal approval URL."
           },
           "response": []
         }
