@@ -7,7 +7,7 @@ import {
 } from "./product_model.js";
 
 export const readProducts = async (req, res) => {
-  const { name, categoryId, minPrice, maxPrice } = req.body;
+  const { name, categoryId, minPrice, maxPrice } = req.body || req.query || {};
   const products = await getProducts({ name, categoryId, minPrice, maxPrice });
   if (products.length === 0) {
     return res.status(404).json({ message: "No products found" });

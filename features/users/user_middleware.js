@@ -36,6 +36,9 @@ export const verifyToken = (req, res, next) => {
 
 // Verify admin role
 export const verifyAdmin = (req, res, next) => {
+    if (!req.decoded) {
+        return res.status(401).json({message: "token is required"});
+    }
     if (req.decoded.role !== "admin") {
         return res.status(403).json({message: "access denied. admin only"});
     }

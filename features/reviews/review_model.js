@@ -4,26 +4,24 @@ import db from "../../config/firebase-config.js";
 export const getReviewsByProductId = async (productId) => {
     const snapshot = await db.collection("reviews")
         .where("productId", "==", productId)
-        .orderBy("createdAt", "desc")
         .get();
     
     return snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-    }));
+    })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 };
 
 // GET reviews by user ID
 export const getReviewsByUserId = async (userId) => {
     const snapshot = await db.collection("reviews")
         .where("userId", "==", userId)
-        .orderBy("createdAt", "desc")
         .get();
     
     return snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-    }));
+    })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 };
 
 // GET review by ID
