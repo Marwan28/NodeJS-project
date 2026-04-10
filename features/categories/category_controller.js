@@ -5,6 +5,7 @@ import {
   editCategory,
   removeCategory,
 } from "./category_model.js";
+import { countProductsByCategoryId } from "../products/product_model.js";
 export const readCategories = async (req, res) => {
   const categories = await getCategories();
   if (categories.length === 0) {
@@ -39,11 +40,21 @@ export const updateCategory = async (req, res) => {
 };
 
 export const deleteCategory = async (req, res) => {
-  const category = await removeCategory(req.params.id);
+  const category = await getCategoryById(req.params.id);
   if (!category) {
     return res.status(404).json({ message: "Category not found" });
   }
+
+  const productsCount = await countProductsByCategoryId(req.params.id);
+  if (productsCount > 0) {
+    return res.status(409).json({
+      message: "Cannot delete category because it contains products",
+      productsCount,
+    });
+  }
+
+  const deletedCategory = await removeCategory(req.params.id);
   return res
     .status(200)
-    .json({ message: "removeCategory", category: category });
+    .json({ message: "removeCategory", category: deletedCategory });
 };

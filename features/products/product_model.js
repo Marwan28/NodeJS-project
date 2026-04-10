@@ -35,6 +35,14 @@ export const getProductById = async (id) => {
   return { id: doc.id, ...doc.data() };
 };
 
+export const countProductsByCategoryId = async (categoryId) => {
+  const snapshot = await collection
+    .where("categoryId", "==", categoryId)
+    .get();
+
+  return snapshot.size;
+};
+
 export const addProduct = async (product) => {
   const docRef = await collection.add(product);
   return { id: docRef.id, ...product };
