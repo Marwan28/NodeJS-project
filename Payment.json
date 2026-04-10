@@ -1,0 +1,139 @@
+{
+	"info": {
+		"name": "💳 Simple Payment API",
+		"description": "One endpoint to create payment and get PayPal link",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🎯 Create Payment (Get PayPal Link)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const response = pm.response.json();",
+							"    console.log('✅ Payment URL:', response.paymentUrl);",
+							"    console.log('💰 Amount:', response.amount);",
+							"    console.log('📝 Order ID:', response.orderId);",
+							"    console.log('');",
+							"    console.log('👉 Open this URL in browser to pay:');",
+							"    console.log(response.paymentUrl);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "token",
+						"value": "{{user_token}}",
+						"description": "Optional: Add if user is logged in"
+					},
+					{
+						"key": "x-guest-id",
+						"value": "{{guest_id}}",
+						"description": "Optional: Add if guest user"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{base_url}}/payment/create",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"payment",
+						"create"
+					]
+				},
+				"description": "Creates PayPal payment and returns payment URL.\n\n**How it works:**\n1. Backend gets cart from database\n2. Calculates total amount\n3. Creates PayPal order\n4. Returns payment URL\n\n**What to do:**\n1. Send this request\n2. Copy the `paymentUrl` from response\n3. Open it in browser\n4. Pay with PayPal Sandbox account\n5. Done! ✅"
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/payment/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"payment",
+								"create"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [],
+					"cookie": [],
+					"body": "{\n    \"success\": true,\n    \"paymentUrl\": \"https://www.sandbox.paypal.com/checkoutnow?token=7XY12345ABC\",\n    \"amount\": 150.50,\n    \"orderId\": \"7XY12345ABC\"\n}"
+				}
+			]
+		},
+		{
+			"name": "📦 Step 1: Add to Cart (Optional)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "token",
+						"value": "{{user_token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"productId\": \"{{product_id}}\",\n    \"quantity\": 2\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/cart",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"cart"
+					]
+				},
+				"description": "Add items to cart before creating payment"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000"
+		},
+		{
+			"key": "user_token",
+			"value": ""
+		},
+		{
+			"key": "guest_id",
+			"value": ""
+		},
+		{
+			"key": "product_id",
+			"value": ""
+		}
+	]
+}
