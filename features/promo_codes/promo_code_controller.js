@@ -1,6 +1,7 @@
 import {
   getPromoCodes,
   getPromoCodeById,
+  getPromoCodeByCode,
   addPromoCode,
   editPromoCode,
   removePromoCode,
@@ -23,6 +24,15 @@ export const readPromoCodeById = async (req, res) => {
   return res
     .status(200)
     .json({ message: "getPromoCodeById", promoCode: promoCode });
+};
+export const readPromoCodeByCode = async (req, res) => {
+  const promoCode = await getPromoCodeByCode(req.params.code);
+  if (!promoCode) {
+    return res.status(404).json({ message: "Promo code not found" });
+  }
+  return res
+    .status(200)
+    .json({ message: "getPromoCodeByCode", promoCode: promoCode });
 };
 export const createPromoCode = async (req, res) => {
   const promoCode = await addPromoCode(req.body);

@@ -12,6 +12,12 @@ export const getPromoCodeById = async (id) => {
   if (!doc.exists) return null;
   return { id: doc.id, ...doc.data() };
 };
+export const getPromoCodeByCode = async (code) => {
+  const snapshot = await collection.where("code", "==", code).limit(1).get();
+  if (snapshot.empty) return null;
+  const doc = snapshot.docs[0];
+  return { id: doc.id, ...doc.data() };
+};
 
 export const addPromoCode = async (promoCode) => {
   const docRef = await collection.add(promoCode);
