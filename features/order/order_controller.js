@@ -3,6 +3,7 @@ import { getCartByUserId, getCartByGuestId, clearCart } from "../cart/cart_model
 import { sendOrderConfirmationEmail, sendOrderStatusEmail } from "./order_email.js";
 import { getUserById } from "../users/user_model.js";
 import { getProductById, editProduct } from "../products/product_model.js";
+import { validatePromoCode, decrementPromoCodeQuantity } from "../promo_codes/promo_code_model.js";
 
 const resolveEmail = async (order) => {
     if (order.userId) {
@@ -12,17 +13,27 @@ const resolveEmail = async (order) => {
     return order.guestInfo?.email || null;
 };
 
-const calculateSummary = (items) => {
+const calculateSummary = (items, promoDiscount = 0) => {
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const discount = items.reduce((sum, item) => {
+
+    // Per-item discounts (e.g. sale prices on products)
+    const itemDiscount = items.reduce((sum, item) => {
         if (item.discount) return sum + (item.price * item.discount / 100) * item.quantity;
         return sum;
     }, 0);
-    const total = subtotal - discount;
+
+    const afterItemDiscount = subtotal - itemDiscount;
+
+    // Promo code discount is applied on top of item discounts
+    const promoDiscountAmount = parseFloat(((afterItemDiscount * promoDiscount) / 100).toFixed(2));
+
+    const total = afterItemDiscount - promoDiscountAmount;
+
     return {
         itemsCount: items.reduce((sum, i) => sum + i.quantity, 0),
         subtotal: parseFloat(subtotal.toFixed(2)),
-        discount: parseFloat(discount.toFixed(2)),
+        discount: parseFloat((itemDiscount + promoDiscountAmount).toFixed(2)),
+        promoDiscount: promoDiscountAmount,
         total: parseFloat(total.toFixed(2))
     };
 };
@@ -46,12 +57,13 @@ const restoreStock = async (items) => {
 };
 
 export const placeOrder = async (req, res) => {
-    const { paymentMethod, shippingAddress, guestInfo, paypalTransactionId } = req.body;
+    const { paymentMethod, shippingAddress, guestInfo, paypalTransactionId, promoCode } = req.body;
     const isGuest = !req.decoded;
 
     if (isGuest && !guestInfo) {
         return res.status(400).json({ message: "guestInfo is required for guest checkout" });
     }
+
     let cart;
     if (!isGuest) {
         cart = await getCartByUserId(req.decoded.id);
@@ -60,9 +72,11 @@ export const placeOrder = async (req, res) => {
         if (!guestId) return res.status(400).json({ message: "x-guest-id header is required for guest checkout" });
         cart = await getCartByGuestId(guestId);
     }
+
     if (!cart || cart.items.length === 0) {
         return res.status(400).json({ message: "cart is empty" });
     }
+
     for (const item of cart.items) {
         const product = await getProductById(item.productId);
         if (!product) {
@@ -76,6 +90,18 @@ export const placeOrder = async (req, res) => {
             return res.status(400).json({ message: `only ${availableStock} items available for "${item.name}"` });
         }
     }
+
+    // ── Promo code validation ──────────────────────────────────────────────────
+    let appliedPromo = null;
+    if (promoCode) {
+        const { promo, error } = await validatePromoCode(promoCode);
+        if (error) {
+            return res.status(400).json({ message: error });
+        }
+        appliedPromo = promo;
+    }
+    // ──────────────────────────────────────────────────────────────────────────
+
     let resolvedShippingAddress = { ...shippingAddress };
     if (!isGuest) {
         const user = await getUserById(req.decoded.id);
@@ -84,7 +110,8 @@ export const placeOrder = async (req, res) => {
         resolvedShippingAddress.name = guestInfo.name;
     }
 
-    const summary = calculateSummary(cart.items);
+    const summary = calculateSummary(cart.items, appliedPromo?.discount ?? 0);
+
     const order = await createOrder({
         userId: req.decoded?.id || null,
         guestInfo: isGuest ? guestInfo : null,
@@ -92,14 +119,26 @@ export const placeOrder = async (req, res) => {
         shippingAddress: resolvedShippingAddress,
         paymentMethod,
         paypalTransactionId,
-        summary
+        summary,
+        // Store the applied promo info on the order document
+        promoCode: appliedPromo
+            ? { id: appliedPromo.id, code: appliedPromo.code, discount: appliedPromo.discount }
+            : null
     });
+
     await reduceStock(cart.items);
     await clearCart(cart.id);
+
+    // Decrement promo code quantity AFTER the order is successfully created
+    if (appliedPromo) {
+        await decrementPromoCodeQuantity(appliedPromo.id);
+    }
+
     const email = isGuest ? guestInfo.email : (await getUserById(req.decoded.id))?.email;
     if (email) {
         await sendOrderConfirmationEmail(email, order);
     }
+
     res.status(201).json({
         message: "order placed successfully",
         data: order

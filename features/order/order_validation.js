@@ -36,7 +36,10 @@ const placeOrderSchema = Joi.object({
         is: "paypal",
         then: Joi.required().messages({ "any.required": "paypalTransactionId is required for PayPal payments" }),
         otherwise: Joi.optional()
-    })
+    }),
+
+    // Optional promo code string sent by the client
+    promoCode: Joi.string().trim().uppercase().optional()
 });
 
 const updateOrderStatusSchema = Joi.object({
