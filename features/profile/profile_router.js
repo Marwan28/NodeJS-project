@@ -7,7 +7,8 @@ import { verifyToken } from "./profile_middleware.js";
 const profileRouter = express.Router();
 
 // All routes require authentication
-profileRouter.use(verifyToken);
+// profileRouter.use(verifyToken);
+profileRouter.use("/profile", verifyToken);
 
 profileRouter.get("/profile", readProfile);
 profileRouter.post("/profile", validation(profileSchema), addProfile);

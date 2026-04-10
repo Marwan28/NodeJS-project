@@ -90,6 +90,16 @@ export const updateUser = async (id, data) => {
     return await getUserById(id);
 };
 
+// UPDATE user profile status
+export const editUserProfileStatus = async (id, status) => {
+    await db.collection("users").doc(id).update({
+        status,
+        updatedAt: Date.now()
+    });
+
+    return await getUserById(id);
+};
+
 // DELETE user
 export const deleteUser = async (id) => {
     await db.collection("users").doc(id).delete();

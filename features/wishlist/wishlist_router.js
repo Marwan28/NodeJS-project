@@ -7,7 +7,8 @@ import { verifyToken } from "./wishlist_middleware.js";
 const wishlistRouter = express.Router();
 
 // All routes require authentication
-wishlistRouter.use(verifyToken);
+// wishlistRouter.use(verifyToken);
+wishlistRouter.use("/wishlist", verifyToken);
 
 wishlistRouter.get("/wishlist", readWishlist);
 wishlistRouter.post("/wishlist", validation(wishlistSchema), addToWishlistController);

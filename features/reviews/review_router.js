@@ -11,7 +11,8 @@ reviewRouter.get("/products/:productId/reviews", readProductReviews);
 reviewRouter.get("/products/:productId/rating", readProductRating);
 
 // Protected routes
-reviewRouter.use(verifyToken);
+// reviewRouter.use(verifyToken);
+reviewRouter.use("/reviews", verifyToken);
 reviewRouter.get("/reviews", readUserReviews);
 reviewRouter.post("/reviews", validation(reviewSchema), addReview);
 reviewRouter.put("/reviews/:id", validation(reviewUpdateSchema), editReview);
